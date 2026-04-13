@@ -1,55 +1,55 @@
-export class PersistedState {
+class CreatePersistedState {
     #key;
     #initialValue;
-    // this value is reactive and can be modified ($state)
-    value = $state();
+    #internalValue = $state();
+    #cleanupRoot;
     constructor(key, initialValue) {
         this.#key = key;
         this.#initialValue = initialValue;
-        // SSR protection and initial value setting (only access local storage on browser)
         if (typeof window !== "undefined") {
             const item = localStorage.getItem(key);
-            if (item !== null) {
-                // protect broken data (try-catch)
-                try {
-                    this.value = JSON.parse(item);
-                }
-                catch (err) {
-                    console.warn(`[rune-storage] '${key}' parsing failed. restoring initial value.`);
-                    this.value = initialValue;
-                }
+            try {
+                this.#internalValue = item ? JSON.parse(item) : initialValue;
             }
-            else {
-                this.value = initialValue;
+            catch {
+                this.#internalValue = initialValue;
             }
+            this.#cleanupRoot = $effect.root(() => {
+                $effect(() => {
+                    const sync = (e) => {
+                        if (e.key === this.#key && e.newValue) {
+                            try {
+                                this.#internalValue = JSON.parse(e.newValue);
+                            }
+                            catch (err) {
+                                console.error("Sync parsing failed", err);
+                            }
+                        }
+                    };
+                    window.addEventListener("storage", sync);
+                    return () => window.removeEventListener("storage", sync);
+                });
+            });
         }
         else {
-            this.value = initialValue;
+            this.#internalValue = initialValue;
         }
-        $effect(() => {
-            // protect overflow error (try-catch)
-            try {
-                localStorage.setItem(this.#key, JSON.stringify(this.value));
-            }
-            catch (err) {
-                console.error(`[rune-storage] '${this.#key}' saving failed (overflow error, etc.)`, err);
-            }
-        });
-        // synchronize the value between tabs
-        $effect(() => {
-            const sync = (e) => {
-                if (e.key === this.#key && e.newValue) {
-                    this.value = JSON.parse(e.newValue);
-                }
-            };
-            window.addEventListener("storage", sync);
-            return () => window.removeEventListener("storage", sync);
-        });
     }
-    reset() {
-        this.value = this.#initialValue; // reset the value on the screen
+    get value() {
+        return this.#internalValue;
+    }
+    set value(newValue) {
+        this.#internalValue = newValue;
         if (typeof window !== "undefined") {
-            localStorage.removeItem(this.#key); // remove the value from the storage
+            localStorage.setItem(this.#key, JSON.stringify(newValue));
         }
     }
+    destroy() {
+        if (this.#cleanupRoot) {
+            this.#cleanupRoot();
+        }
+    }
+}
+export function persistedState(key, initialValue) {
+    return new CreatePersistedState(key, initialValue);
 }

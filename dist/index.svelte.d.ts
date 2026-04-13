@@ -1,6 +1,9 @@
-export declare class PersistedState<T> {
+declare class CreatePersistedState<T> {
     #private;
-    value: T;
     constructor(key: string, initialValue: T);
-    reset(): void;
+    get value(): T;
+    set value(newValue: T);
+    destroy(): void;
 }
+export declare function persistedState<T>(key: string, initialValue: T): CreatePersistedState<T>;
+export {};

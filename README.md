@@ -16,7 +16,7 @@
 
 ## Installation
 
-```bash
+```
 npm install svelte5-rune-storage
 ```
 ````
@@ -27,10 +27,10 @@ npm install svelte5-rune-storage
 
 ```svelte
 <script lang="ts">
-  import { PersistedState } from 'svelte5-rune-storage';
+  import { persistedState } from 'svelte5-rune-storage';
 
   // Key: 'user-name', Default Value: 'Elijah'
-  const user = new PersistedState('user-name', 'Elijah');
+  const user = persistedState('user-name', 'Elijah');
 </script>
 
 <input bind:value={user.value} />
@@ -41,9 +41,9 @@ npm install svelte5-rune-storage
 
 ```svelte
 <script lang="ts">
-  import { PersistedState } from '@ejkx/rune-storage';
+  import { persistedState } from 'svelte5-rune-storage';
 
-  const settings = new PersistedState('app-settings', {
+  const settings = persistedState('app-settings', {
     theme: 'light',
     fontSize: 16
   });
@@ -63,4 +63,4 @@ settings.reset();
 
 ## License
 
-MIT License © [Elijah Kim](https://github.com/elijah-kim)
+MIT License © [Elijah J Kim](https://github.com/ElijahJKim)

@@ -1,62 +1,61 @@
-export class PersistedState<T> {
+class CreatePersistedState<T> {
   #key: string;
   #initialValue: T;
+  #internalValue = $state<T>() as T;
 
-  // this value is reactive and can be modified ($state)
-  value = $state<T>() as T;
+  #cleanupRoot?: () => void;
 
   constructor(key: string, initialValue: T) {
     this.#key = key;
     this.#initialValue = initialValue;
 
-    // SSR protection and initial value setting (only access local storage on browser)
     if (typeof window !== "undefined") {
       const item = localStorage.getItem(key);
-      if (item !== null) {
-        // protect broken data (try-catch)
-        try {
-          this.value = JSON.parse(item);
-        } catch (err) {
-          console.warn(
-            `[rune-storage] '${key}' parsing failed. restoring initial value.`,
-          );
-          this.value = initialValue;
-        }
-      } else {
-        this.value = initialValue;
-      }
-    } else {
-      this.value = initialValue;
-    }
-
-    $effect(() => {
-      // protect overflow error (try-catch)
       try {
-        localStorage.setItem(this.#key, JSON.stringify(this.value));
-      } catch (err) {
-        console.error(
-          `[rune-storage] '${this.#key}' saving failed (overflow error, etc.)`,
-          err,
-        );
+        this.#internalValue = item ? JSON.parse(item) : initialValue;
+      } catch {
+        this.#internalValue = initialValue;
       }
-    });
 
-    // synchronize the value between tabs
-    $effect(() => {
-      const sync = (e: StorageEvent) => {
-        if (e.key === this.#key && e.newValue) {
-          this.value = JSON.parse(e.newValue);
-        }
-      };
-      window.addEventListener("storage", sync);
-      return () => window.removeEventListener("storage", sync);
-    });
-  }
+      this.#cleanupRoot = $effect.root(() => {
+        $effect(() => {
+          const sync = (e: StorageEvent) => {
+            if (e.key === this.#key && e.newValue) {
+              try {
+                this.#internalValue = JSON.parse(e.newValue);
+              } catch (err) {
+                console.error("Sync parsing failed", err);
+              }
+            }
+          };
 
-  reset() {
-    this.value = this.#initialValue; // reset the value on the screen
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(this.#key); // remove the value from the storage
+          window.addEventListener("storage", sync);
+          return () => window.removeEventListener("storage", sync);
+        });
+      });
+    } else {
+      this.#internalValue = initialValue;
     }
   }
+
+  get value() {
+    return this.#internalValue;
+  }
+
+  set value(newValue: T) {
+    this.#internalValue = newValue;
+    if (typeof window !== "undefined") {
+      localStorage.setItem(this.#key, JSON.stringify(newValue));
+    }
+  }
+
+  destroy() {
+    if (this.#cleanupRoot) {
+      this.#cleanupRoot();
+    }
+  }
+}
+
+export function persistedState<T>(key: string, initialValue: T) {
+  return new CreatePersistedState(key, initialValue);
 }

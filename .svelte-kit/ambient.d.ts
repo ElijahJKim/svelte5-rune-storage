@@ -31,8 +31,8 @@ declare module '$env/static/private' {
 	export const TERM_PROGRAM: string;
 	export const VSCODE_GIT_IPC_AUTH_TOKEN: string;
 	export const NODE: string;
-	export const _P9K_TTY: string;
 	export const NVM_CD_FLAGS: string;
+	export const _P9K_TTY: string;
 	export const INIT_CWD: string;
 	export const SHELL: string;
 	export const TERM: string;
@@ -140,8 +140,8 @@ declare module '$env/dynamic/private' {
 		TERM_PROGRAM: string;
 		VSCODE_GIT_IPC_AUTH_TOKEN: string;
 		NODE: string;
-		_P9K_TTY: string;
 		NVM_CD_FLAGS: string;
+		_P9K_TTY: string;
 		INIT_CWD: string;
 		SHELL: string;
 		TERM: string;

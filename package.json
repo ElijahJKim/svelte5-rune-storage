@@ -1,9 +1,13 @@
 {
   "name": "svelte5-rune-storage",
-  "version": "1.0.1",
-  "author": "Elijah Kim",
+  "version": "1.1.0",
+  "author": "Elijah J Kim",
   "license": "MIT",
   "description": "Svelte 5 Runes-based local storage library with SSR protection and tab synchronization",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ElijahJKim/svelte-runes-storage"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run prepack",
