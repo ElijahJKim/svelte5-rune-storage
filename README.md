@@ -1,4 +1,3 @@
-````markdown
 # svelte5-rune-storage
 
 **local storage persistence library for Svelte 5 Runes.**
