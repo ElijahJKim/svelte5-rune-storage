@@ -1,6 +1,6 @@
 # svelte5-rune-storage
 
-**local storage persistence library for Svelte 5 Runes.**
+**local storage persistence library for Svelte 5 Runes.** https://www.npmjs.com/package/svelte5-rune-storage
 
 `svelte5-rune-storage` allows you to manage local storage as if it were a regular variable (`$state`). It provides SSR safety, automatic JSON serialization, and real-time cross-tab synchronization out of the box with just one line of code.
 
